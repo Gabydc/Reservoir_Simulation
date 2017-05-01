@@ -1,0 +1,213 @@
+\documentclass[a4paper,10pt]{report}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{natbib}
+\usepackage{graphicx} % figuras
+\usepackage[export]{adjustbox} % loads also graphicx
+\usepackage{float}
+\usepackage{amssymb}
+
+% Title Page
+\title{}
+\author{}
+
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+\section{Single-phase reservoir}
+\hspace{0.5cm}
+The mathematical modeling is performed taking into account mass conservation and Darcy's law, corresponding to the momentum conservation. The equations used to describe multi-phase flow through a porous medium are:
+\begin{equation}\label{eq:ce}
+\frac{\partial (\rho_{\alpha} \phi_{\alpha}S_{\alpha})}{\partial t}+ \nabla \cdot ( \rho_{\alpha} {v}_{\alpha})=q_{\alpha}, \qquad v_{\alpha}=-\frac{kk_{r\alpha}}{\mu_{\alpha}}(\nabla p_{\alpha}-\rho_{\alpha} g\nabla z),
+\end{equation}
+where the primary unknown is the pressure ${p},$ $g$ is the constant of gravity, $d$ is the reservoir depth,
+$\rho$ and $\mu$ are the fluid density and viscosity and $q$ are the sources, and the $_{\alpha}$ represents the phase.
+We define the mobility of each phase as $\lambda_{\alpha}=\frac{kk_{r\alpha}}{\mu_{\alpha}}$. \\\\
+\textbf{Single phase fluid}\\
+If we have only one phase, the saturation of this phase is one, Equation \eqref{eq:ce} becomes:
+
+For this problem, assuming no gravity terms and a fluid with constant viscosity, we have three cases:
+\begin{itemize}
+ \item[1.] Incompressible fluid. The density and the porosity are not pressure-dependent and the system is, therefore, time independent, Equation \eqref{eq:ce} reads:\\
+ \begin{equation}\label{eq:cei}
+-\nabla \cdot \left(\lambda_{\alpha}\rho_{\alpha}\nabla p_{\alpha}\right)=q_{\alpha}\rho_{\alpha}.
+\end{equation}
+ \item[2.] Slightly compressible fluid. The density changes slightly with pressure. We divide Equation \eqref{eq:ce} by the density and we obtain:\\
+\begin{equation*}
+\frac{1}{\rho_{\alpha}}\frac{\partial (\rho_{\alpha} \phi_{\alpha})}{\partial t}-\frac{1}{\rho_{\alpha}}\rho_{\alpha}\nabla \cdot \left(\lambda_{\alpha}\nabla p_{\alpha}\right)=\frac{1}{\rho_{\alpha}}q_{\alpha}\rho_{\alpha}.
+\end{equation*}
+that can be rewritten as
+\begin{equation}\label{eq:cesc}
+c_{eff}\frac{\partial p}{\partial t}-\nabla \cdot \left(\lambda_{\alpha}\nabla p_{\alpha}\right)=q_{\alpha},
+\end{equation}
+where
+$c_{eff}=\frac{1}{\rho_{\alpha}}\frac{\partial (\rho_{\alpha} \phi_{\alpha})}{\partial p}.$
+\end{itemize}
+
+\emph{Discretization 1D}\\
+We discretize the domain, using finite elements or finite volumes schemes. Using a finite volumes method, we compute the pressure $p_i$ in the center of the $i-th$ cell, the velocities in the boundary of the cell and for each cell $i$, we have a mobility value $\lambda_i$, (see Figure \ref{fig:dom}). The pressure is prescribed in the boundaries of the domain, $P_L$ for the left boundary, and $P_R for the right$.
+With this scheme, the discretization of the spatial part is the following:
+
+
+
+The spatial derivatives are approximated using a finite difference scheme with cell central 
+differences. For a 3D model, taking a mesh with a uniform grid size $\Delta x$, $\Delta y$, $\Delta z$ where $(i,j,l)$ is the center 
+of the cell
+in the position $i$ in the $x$ direction and $j$ in the $y$ direction and $l$ in the $z$ direction
+($x_i,y_j,z_l$) and $p_{i,j,l}=p(x_i,y_j,z_l)$ is 
+the pressure at this point.
+\\ For the $x$ direction, we have (see \cite{Jansen13}):
+
+\begin{align*}
+&\frac{\partial}{\partial x}\left(k\frac{\partial p}{\partial x}\right) = 
+\frac{\Delta }{\Delta x}\left(k\frac{\Delta p}{\Delta x}\right) +\mathcal{O}(\Delta x^2)\\
+&=\frac{ k_{i+\frac{1}{2},j,l}(p_{i+1,j,l}-p_{i,j,l})-k_{i-\frac{1}{2},j,l}(p_{i,j,l}-p_{i-1,j,l})}{\left( \Delta x\right)^2}+\mathcal{O}(\Delta x^2),\\
+\end{align*}
+
+where $k_{i-\frac{1}{2},j,l}$ is the harmonic average of the permeability for cells 
+$(i-1,j,l)$ and $(i,j,l)$:
+\begin{equation}\label{eq:ha}
+ k_{i-\frac{1}{2},j,l}=\frac{2}{\frac{1}{ k_{i-1,j,l}}+\frac{1}{ k_{i,j,l}}}.
+\end{equation}
+After discretization, Equation \eqref{eq:cel}, together with boundary conditions, can be written as:
+ \begin{equation}\label{eq:cel1}
+\mathbf{T}\mathbf{p} = \mathbf{q},
+\end{equation}
+where $\mathbf{T}$ is known as the transmissibility matrix with elements in adjacent grid cells. The $transmissibility$ ($T_{i-\frac{1}{2},j,l}$) between grid cells $(i-1,j,l)$ and $(i,j,l)$ is defined as \cite{Cordazzo02}:
+\begin{equation}\label{eq:htrans}
+ T_{i-\frac{1}{2},j,l}=\frac{2\Delta y \Delta z}{\mu\Delta x}k_{i-\frac{1}{2},j,l},
+\end{equation} 
+System \eqref{eq:cel1} is a linear system that can be solved with iterative or direct methods. For the solution of this system, it is necessary to define boundary conditions in all boundaries of the domain. These conditions can be prescribed pressures 
+(Dirichlet conditions), flow rates (Neumann conditions) or a combination of these (Robin conditions).  \\\\
+\textbf{Compressible fluid}\\
+If the fluid is compressible with a constant compressibility, the density depends on the pressure (see Equation \eqref{eq:rhoeq}). Therefore, Equations \eqref{eq:ce} become:
+\begin{equation}\label{eq:ce2}
+\frac{\partial (\rho(p) \phi)}{\partial t}+ \nabla \cdot ( \rho(p) {v})=q, \qquad v=-\frac{K}{\mu}(\nabla p-\rho(p) g\nabla z),
+\end{equation}
+\emph{Discretization}\\
+Using backward Euler time discretization, Equations \eqref{eq:ce2} are approximated by:
+\begin{equation}\label{eq:ce3}
+ \frac{(\mathbf{\phi}\mathbf{\rho}(p))^{n+1}-(\mathbf{\phi}\mathbf{\rho}(p))^{n}}{\Delta t^n}
+ +\nabla \cdot (\mathbf{\rho}({p}) v)^{n+1}={q}^{n+1},
+\qquad
+{v}^{n+1}= -\frac{{K}}{\mu^{n+1}}(\nabla({p}^{n+1})-g\mathbf{\rho}^{n+1}\nabla{z}).
+\end{equation}
+Assuming no gravity terms, constant fluid viscosity and constant rock porosity, Equations \eqref{eq:ce3}
+become:
+\begin{equation}\label{eq:ce4}
+ \mathbf{\phi}\frac{\mathbf{\rho}({p}^{n+1})
+ -\mathbf{\rho}({p}^{n})}{\Delta t^n}
+ -\frac{1}{\mu}\nabla \cdot (\mathbf{\rho}({p}^{n+1}) 
+ {K}\nabla{p}^{n+1})+{q}^{n+1}=0.
+\end{equation}
+Due to the dependence of $\rho$ on the pressure, the latter is a nonlinear equation for $p$ that can be linearized with, e.g., the Newton-Raphson (NR) method.
+Equation \eqref{eq:ce4} can be discretized in space, using a finite differences scheme. After spatial discretization, Equation \eqref{eq:ce4} reads:
+\begin{equation}\label{eq:ce5}
+ {\phi}\frac{{\rho}(\mathbf{p}^{n+1})
+ -{\rho}(\mathbf{p}^{n})}{\Delta t^n}
+ -\frac{1}{\mu}\nabla \cdot ({\rho}(\mathbf{p}^{n+1}) 
+ \mathbf{K}\nabla\mathbf{p}^{n+1})+\mathbf{q}^{n+1}=0.
+\end{equation}
+As in the incompressible case, we need to define boundary condition to solve Equation \eqref{eq:ce5}. Dirichlet, Neumann or Robin boundary conditions can be used. For this problem, we also have a derivative with respect to time. Therefore, it is also necessary to specify the initial conditions that are the pressure values of the reservoir at the beginning of the simulation.\\\\
+\textbf{Well model}\\
+In reservoirs, wells are typically drilled to extract or inject fluids. Fluids are injected into a well at constant 
+surface rate or constant bottom-hole pressure (bhp) and are produced at constant bhp or a constant surface rate.\\
+ When the bhp is known, some models are developed to accurately compute the flow rate into the wells. 
+ A widely used model is Peaceman's model, that takes into account the bhp and the average grid pressure in the block containing the well. 
+This model is a linear relationship between the bhp and the surface flow rate in a well, for a cell $(i,j,l)$ that contains a well, this relationship is given by:
+\begin{equation}\label{eq:wellm}
+{q}_{(i,j,l)}={I}_{(i,j,l)}({p}_{(i,j,l)}-{p}_{bhp(i,j,l)}),
+\end{equation}
+where ${I}_{(i,j,l)}$ is the productivity or injectivity index of the well, ${p}_{(i,j,l)}$ is the reservoir pressure in the cell 
+where the well is located, 
+and ${p}_{bhp(i,j,l)}$ is a prescribed pressure inside the well. \\\\
+\emph{Incompressible fluid}\\
+Using the well model for an incompressible fluid, Equation \eqref{eq:cel1} transforms into:
+ \begin{equation}\label{eq:celw1}
+\mathbf{T}\mathbf{p} = \mathbf{I}_w(\mathbf{p}-\mathbf{p}_{bhp}).
+\end{equation}
+Where $\mathbf{I}_w$ is a vector containing the productivity or injetivity indices of the wells present in the reservoir. It is zero for cells without wells and the value of the well index for each cell containing a well.\\\\ 
+\emph{Compressible fluid}\\
+For a compressible fluid, using the well model, Equation \eqref{eq:ce5} reads:
+\begin{equation}\label{eq:cew4}
+ {\phi}\frac{{\rho}(\mathbf{p}^{n+1})
+ -{\rho}(\mathbf{p}^{n})}{\Delta t^n}
+ -\frac{1}{\mu}\nabla \cdot ({\rho}(\mathbf{p}^{n+1}) 
+ \mathbf{K}\nabla\mathbf{p}^{n+1})+\mathbf{I}_w^{n+1}(\mathbf{p}^{n+1}-\mathbf{p}_{bhp}^{n+1})=0.
+\end{equation}\\
+\textbf{Solution procedure for compressible flow}\\
+As mentioned before, for the compressible problem, we have a nonlinear system that depends on the pressure at the time step $n$ and the pressure at the time step $n+1$. Therefore, Equation \eqref{eq:cew4} can be seen as a function that depends on $\mathbf{p}^{n+1}$ and $\mathbf{p}^{n}$, i.e.,
+\begin{equation}\label{eq:NR}
+ \mathbf{F}(\mathbf{p}^{n+1};\mathbf{p}^n)=0.
+\end{equation}
+This nonlinear system can be solved with the NR method, the system for the $(k+1)$-th NR iteration is:
+$$\mathbf{J}(\mathbf{p}^k)\delta\mathbf{p}^{k+1}=-\mathbf{F}(\mathbf{p}^k;\mathbf{p}^n),
+\qquad \mathbf{p}^{k+1}=\mathbf{p}^k+\delta \mathbf{p}^{k+1},$$
+where $\mathbf{J}(\mathbf{p}^k)=\frac{\partial \mathbf{F}(\mathbf{p}^k;\mathbf{p}^n)}{\partial \mathbf{p}^k}$ is the 
+Jacobian matrix, and $\delta \mathbf{p}^{k+1}$ is the NR update at iteration step $k+1$.\\
+Therefore, the linear system to solve is:\\
+\begin{equation}\label{eq:lsJ}
+\mathbf{J}(\mathbf{p}^k)\delta \mathbf{p}^{k+1}=\mathbf{b}(\mathbf{p}^k).
+\end{equation}
+with $\mathbf{b}(\mathbf{p}^k)$ being the function evaluated at iteration step $k$, $\mathbf{b}(\mathbf{p}^k)=-\mathbf{F}(\mathbf{p}^k;\mathbf{p}^n)$.\\
+The procedure to solve a compressible flow problem consists of three stages. During the first stage, we select a 
+time and solve Equation \eqref{eq:cew4} for this particular time, i.e., we have a solution for each time step. In the second stage, 
+we linearize the equations with the NR method, i.e., we perform a series of iterations to find the 
+zeros of Equation \eqref{eq:NR}. For every NR iteration the linear system in Equation \eqref{eq:lsJ} is solved. In this work, the solution of the linear system is performed with iterative methods (see Section \ref{syseq}). A summary of 
+this procedure is presented in Algorithm 1.
+
+\begin{table}[!h]\centering
+\begin{minipage}{.7\textwidth}
+\begin{tabular}{ |l| } 
+\hline
+\textbf{Algorithm 1}\\
+\hline
+\hline
+\hspace{0.5cm}\textbf{for} $t=0,...,$    \hspace{52mm}    \%Time integration \\
+\hspace{1cm} Select time step\\
+\hspace{1cm}\textbf{for} $NR\_iter=0,...,$    \hspace{34mm}    \%NR iteration\\
+ \hspace{1.5cm} Find zeros of $\mathbf{F}(\mathbf{p}^{n+1};\mathbf{p}^n)=0$\\
+\hspace{1.5cm}\textbf{for} $lin\_iter=0,...,$    \hspace{31mm}    \%Linear iteration \\
+\hspace{2cm}Solve $\mathbf{J}(\mathbf{p}^k)\delta \mathbf{p}^{k+1}=\mathbf{b}(\mathbf{p}^k)$ for each NR iteration\\
+\hspace{1.5cm}\textbf{end}\\
+\hspace{1cm}\textbf{end}\\
+\hspace{0.5cm}\textbf{end}\\
+\hline
+\end{tabular}
+\end{minipage}
+\end{table}
+\subsubsection{Mass Conservative formulation.}
+The reservoir simulation are usually run to predict the recoverable hydrocarbon volumes, 
+in such a case is necessary to represent accurately the mass conservation equation.
+The equation \eqref{ceq4} can be interpreted as the mass balance equation for a grid point $i$,
+if the rows are added, we get:
+\begin{equation}
+ \sum_{i=1}^{n_x} \sum_{j=1}^{n_y}[Vc_t(\phi_0)_{i,j}\dot{p_{i,j}}+q_{i,j}],
+\end{equation}
+which can be interpreted as the mass-balance equation for the system. Therefore any mass-balance
+error in the numerical solution results from errors in the accumulation terms 
+$Vc_t(\phi_0)_{i,j}\dot{p_{i,j}}.$
+The discretization of the accumulation term can be done in the form:
+\begin{equation}
+ Vc_t(\phi_0)\frac{\partial p}{\partial t}=Vc_t(\phi_0)\frac{p_{k+1}-p_{k}}{\Delta t}.
+\end{equation}
+But this discretization, in general, is not mass conservative. For mass conservative discretization
+it is necessary to take the original accumulation term:
+\begin{equation*}
+ \frac{\partial(\rho \phi)}{\partial t}=\frac{1}{\Delta t}\left[
+ \frac{1}{\phi}\frac{\partial \phi}{\partial p}+\frac{1}{\rho}\frac{\partial\rho }{\partial p}
+\right]\frac{\partial p}{\partial t},
+ \end{equation*}
+'Comparison with equation (1.38) shows that the constant coefficient Vct0 has been replaced
+by a state-dependent coefficient, which, moreover, contains an element k+1 that should be
+computed at the new time step k+1. A mass-conservative implementation therefore always
+requires some form of implicit time integration. For liquid flow, and as long as the pressure
+changes in the reservoir remain small compared to the total pressure, the effect of mass-
+balance errors is small, and therefore we do not make use of the strict mass-conserving
+formulation in our numerical examples. However if compressibility plays a role, e.g. when
+free gas is present, the use of a mass-conservative formulation is essential.'
+\end{document}          
